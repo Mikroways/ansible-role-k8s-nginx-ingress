@@ -1,7 +1,7 @@
 ---
 
 galaxy_info:
-  role_name: k8s_nginx_ingress
+  role_name: m7s_nginx_ingress
   author: 'Matias Ferrigno'
   description: 'Install nginx ingress on k8s'
   company: 'Mikroways'
@@ -24,4 +24,4 @@ galaxy_info:
     - "nginx-ingress"
 
 dependencies:
-- mikroways.k8s_helm
+- mikroways.m7s_helm

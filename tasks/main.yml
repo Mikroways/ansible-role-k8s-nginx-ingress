@@ -13,13 +13,12 @@
     kind: Namespace
     name: "{{ m7s_nginx_ingress_namespace }}"
   register: namespace_output
-  when: 
-  - m7s_nginx_ingress_enabled == true
+  when: m7s_nginx_ingress_enabled == true
  
 - name: debug
   fail:
     msg: "El namespace {{ m7s_nginx_ingress_namespace }} ya existe."
-  when: (namespace_output.resources | length > 0) and m7s_nginx_ingress_enabled and m7s_nginx_ingress_state == 'installed'
+  when: m7s_nginx_ingress_enabled and (namespace_output.resources | length > 0) and m7s_nginx_ingress_enabled and m7s_nginx_ingress_state == 'installed'
 
 - name: get chart
   shell: helm fetch stable/nginx_ingress --version "{{ m7s_nginx_ingress_version }}"
