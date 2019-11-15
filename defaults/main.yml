@@ -2,6 +2,6 @@
 m7s_k8s_nginx_ingress_enabled: false
 m7s_k8s_nginx_ingress_namespace: ingress
 m7s_k8s_nginx_ingress_state: installed
-m7s_k8s_nginx_ingress_version: 1.24.7
+m7s_k8s_nginx_ingress_version: 1.25.0
 m7s_k8s_nginx_ingress_values: {}
 m7s_k8s_nginx_ingress_name: ingress
