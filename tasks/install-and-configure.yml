@@ -1,0 +1,61 @@
+- name: get chart
+  shell: helm fetch stable/nginx-ingress --version "{{ m7s_k8s_nginx_ingress_version }}"
+  args:
+    chdir: /tmp/
+  when: m7s_k8s_nginx_ingress_state != 'purged'
+
+- name: unarchive chart
+  unarchive:
+    src: "/tmp/nginx-ingress-{{ m7s_k8s_nginx_ingress_version }}.tgz"
+    dest: "/tmp/"
+    remote_src: yes
+  when: m7s_k8s_nginx_ingress_state != 'purged'
+
+- name: get default values.yaml
+  shell: cat /tmp/nginx-ingress/values.yaml | egrep -v "^\s*#"
+  register: values_original
+  when: m7s_k8s_nginx_ingress_state != 'purged'
+
+- name: combine values
+  set_fact:
+    values_modified: "{{ values_original.stdout | from_yaml | combine(m7s_k8s_nginx_ingress_values, recursive=True) }}"
+  when: m7s_k8s_nginx_ingress_state != 'purged'
+
+- name: delete original values.yaml
+  file:
+    path: /tmp/nginx-ingress/values.yaml
+    state: absent
+  when: m7s_k8s_nginx_ingress_state != 'purged'
+
+- name: replace values.yml
+  blockinfile:
+    path: /tmp/nginx-ingress/values.yaml
+    create: yes
+    block: "{{ values_modified | to_nice_yaml(width=80, indent=2) }}"
+  when: m7s_k8s_nginx_ingress_state != 'purged'
+
+- name: helm install
+  shell: helm install ./ --namespace "{{ m7s_k8s_nginx_ingress_namespace }}" --name "{{ m7s_k8s_nginx_ingress_name }}" -f ./values.yaml 
+  args:
+    chdir: /tmp/nginx-ingress/
+  when: m7s_k8s_nginx_ingress_state == 'installed'
+
+- name: helm upgrade
+  shell: helm upgrade "{{ m7s_k8s_nginx_ingress_name }}" ./ -f ./values.yaml
+  args:
+    chdir: /tmp/nginx-ingress/
+  when: m7s_k8s_nginx_ingress_state == 'upgraded'
+
+- name: helm purge
+  shell: helm delete --purge "{{ m7s_k8s_nginx_ingress_name }}"
+  when: m7s_k8s_nginx_ingress_state == 'purged'
+
+- name: clean
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+  - "/tmp/nginx-ingress-{{ m7s_k8s_nginx_ingress_version }}.tgz"
+  - /tmp/nginx_ingress
+  when: m7s_k8s_nginx_ingress_state != 'purged'
+
